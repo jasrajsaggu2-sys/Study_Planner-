@@ -73,9 +73,31 @@ button.b:disabled{opacity:.5}
 .chip{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:99px;padding:6px 14px;cursor:pointer;font:inherit}
 .chip.on{background:var(--ac2);color:#04122e;border-color:var(--ac2);font-weight:700}
 a.b{display:inline-block;text-decoration:none;background:var(--ac);color:#fff;padding:9px 14px;border-radius:9px}
+
+/* ===== v3: navigation groups + AI studio ===== */
+.tabs.grp .tab{font-weight:700}.tabs.sub{margin-top:-6px}.tabs.sub .tab{padding:6px 12px;font-size:14px}
+.clog{max-height:52vh;min-height:140px;overflow:auto;padding:6px 2px;display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.bub{max-width:88%;padding:9px 12px;border-radius:14px;white-space:pre-wrap;line-height:1.55;word-break:break-word}
+.bub.me{align-self:flex-end;background:var(--ac);color:#fff;border-bottom-right-radius:4px}
+.bub.ai{align-self:flex-start;background:rgba(255,255,255,.07);border:1px solid var(--bd);border-bottom-left-radius:4px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 6px;border:1px solid var(--bd);border-radius:12px;background:rgba(255,255,255,.04);color:var(--tx);cursor:pointer;font:inherit;transition:transform .15s,border-color .15s}
+.tile:hover{transform:translateY(-2px);border-color:var(--ac)}.tile b{font-size:22px}.tile span{font-size:12px;color:var(--mu);text-align:center}
+.sc{font-size:34px;font-weight:800;background:linear-gradient(90deg,var(--ac2),var(--ac));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lres h3{margin:12px 0 4px;font-size:14px}.lres ul{margin:0;padding-left:18px}.lres li{margin:2px 0}
+.good{background:rgba(45,212,167,.16);border:1px solid rgba(45,212,167,.45);border-radius:9px;padding:8px 10px}
+.mapw{overflow:auto;border:1px solid var(--bd);border-radius:12px;background:rgba(5,12,40,.55)}.mapw svg{display:block;min-width:760px;width:100%;height:auto}
+.mq{border:1px solid var(--bd);border-radius:10px;padding:10px;margin:8px 0}
+details.dt{margin-top:6px}details.dt summary{cursor:pointer;color:var(--ac);font-size:13px}
+.mood{display:flex;gap:8px;flex-wrap:wrap}.mood button{font-size:26px;padding:6px 10px;border-radius:12px;border:1px solid var(--bd);background:rgba(255,255,255,.04);cursor:pointer}.mood button.on{border-color:var(--ac2);background:rgba(45,212,167,.2)}
+.pm{position:relative;height:14px;border-radius:9px;background:var(--bd);margin:8px 0 14px}.pm i{display:block;height:100%;border-radius:9px;background:linear-gradient(90deg,#2dd4a7,#5b8cff)}.pm u{position:absolute;top:-4px;width:3px;height:22px;background:#fff;border-radius:2px;text-decoration:none}
+.sel2{display:flex;gap:6px;flex-wrap:wrap}
+.warn{background:rgba(245,165,36,.18);border:1px solid rgba(245,165,36,.5);border-radius:9px;padding:8px 10px}
+@media(max-width:520px){.bub{max-width:96%}}
+.rt span{max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px}
 </style></head><body><div class="w">
 <header><h1>🎓 Grade<span>Up</span></h1><div class="mu">Plan smart. Study smarter. Score higher.</div></header>
-<div class="tabs" id="tabs"></div>
+<div id="tabs"></div>
 <div id="view"></div>
 </div>
 <script>
@@ -87,7 +109,11 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const days=d=>d?Math.ceil((new Date(d+"T00:00:00")-new Date().setHours(0,0,0,0))/864e5):null;
 const prog=s=>s.topics.length?Math.round(s.topics.filter(t=>t.done).length/s.topics.length*100):0;
-const TABS=[["dash","📊 Dashboard"],["subj","📚 Subjects"],["plan","🗓 Planner"],["cal","📆 Calendar"],["test","📝 Tests"],["cards","🃏 Flashcards"],["notes","📓 Notes"],["ai","🤖 AI Tutor"],["stats","📈 Stats"],["calc","🧮 Calculator"],["focus","⏱ Focus"],["donate","💝 Donate"]];
+const TABS=[["dash","📊 Dashboard"],["subj","📚 Subjects"],["plan","🗓 Planner"],["cal","📆 Calendar"],["test","📝 Tests"],["cards","🃏 Flashcards"],["notes","📓 Notes"],["ai","🤖 AI Tutor"],["stats","📈 Stats"],["calc","🧮 Calculator"],["focus","⏱ Focus"],["donate","💝 Donate"],["mock","📄 Mock Paper"],["lab","✍️ Answer Lab"],["mist","🔍 Mistakes"],["chat","💬 AI Chat"],["map","🗺 Mind Map"],["kit","📑 Study Kit"],["coach","🔮 Coach"]];
+const GROUPS=[["🏠 Home",["dash","subj","plan","cal"]],["🎯 Practice",["test","mock","lab","cards","mist"]],["🤖 AI Studio",["chat","ai","map","kit","coach"]],["📊 Track",["stats","focus","notes","calc"]],["💝 More",["donate"]]];
+const XV={},XS={hideReset:()=>false};
+function tabsHTML(){const lab=Object.fromEntries(TABS),g=GROUPS.find(x=>x[1].includes(S.tab))||GROUPS[0];
+  return `<div class="tabs grp">${GROUPS.map(x=>`<button class="tab ${x===g?"on":""}" onclick="S.tab='${x[1][0]}';save();render()">${x[0]}</button>`).join("")}</div><div class="tabs sub">${g[1].map(k=>`<button class="tab ${S.tab==k?"on":""}" onclick="S.tab='${k}';save();render()">${lab[k]}</button>`).join("")}</div>`}
 let AI=null;
 (async()=>{try{AI=await claude.use("sample");render()}catch(e){}})();
 function ai(prompt,el,json,op){
@@ -97,12 +123,12 @@ function ai(prompt,el,json,op){
   return json?AI.json(sys+prompt,op).catch(e=>{el.textContent="AI error: "+(e.message||e.code);return null})
    :AI(sys+prompt,{onText:({text})=>{el.innerHTML=fmt(text)}}).then(r=>{el.innerHTML=fmt(r.text)}).catch(e=>{el.textContent="AI error: "+(e.message||e.code)});
 }
-const fmt=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^#+\s*(.+)$/gm,"<b>$1</b>");
+const fmt=t=>esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/^#+\s*(.+)$/gm,"<b>$1</b>").replace(/^\s*[-*]\s+/gm,"• ");
 function ctx(s){return `Subject: ${s.name}. Exam in ${days(s.date)??"unknown"} days. Target score: ${tg(s)}. Topics (confidence 1=weak..3=strong, done?): `+s.topics.map(t=>`${t.name} [c${t.conf}${t.done?",done":""}]`).join("; ")}
 function render(){
-  $("#tabs").innerHTML=TABS.map(([k,l])=>`<button class="tab ${S.tab==k?"on":""}" onclick="S.tab='${k}';save();render()">${l}</button>`).join("");
-  ({dash,subj,plan:planv,cal:calv,test:testv,cards:cardv,notes:notev,ai:aiv,stats:statv,calc:calcv,focus,donate:donatev})[S.tab]();
-  if(!(S.tab=="test"&&TS&&TS.qs&&!TS.done))$("#view").insertAdjacentHTML("beforeend",resetCard());
+  $("#tabs").innerHTML=tabsHTML();
+  (XV[S.tab]||({dash,subj,plan:planv,cal:calv,test:testv,cards:cardv,notes:notev,ai:aiv,stats:statv,calc:calcv,focus,donate:donatev})[S.tab]||dash)();
+  if(!(S.tab=="test"&&TS&&TS.qs&&!TS.done)&&!XS.hideReset())$("#view").insertAdjacentHTML("beforeend",resetCard());
 }
 function dash(){
   const ss=[...S.subjects].sort((a,b)=>(days(a.date)??999)-(days(b.date)??999));
@@ -129,7 +155,7 @@ function subj(){
   <div class="row"><input id="nt" placeholder="Add a topic / chapter" style="flex:1" onkeydown="if(event.key=='Enter')addT('${s.id}')"><button class="b" onclick="addT('${s.id}')">Add</button></div>
   ${s.topics.map(t=>`<div class="tp ${t.done?"d":""}"><input type="checkbox" style="width:auto" ${t.done?"checked":""} onchange="tog('${s.id}','${t.id}')"><span class="n">${esc(t.name)}</span><select onchange="conf('${s.id}','${t.id}',this.value)">${[[1,"🔴 Weak"],[2,"🟠 Okay"],[3,"🟢 Strong"]].map(([v,l])=>`<option value="${v}" ${t.conf==v?"selected":""}>${l}</option>`).join("")}</select><button class="b g" onclick="delT('${s.id}','${t.id}')">✕</button></div>`).join("")||'<div class="mu">No topics yet.</div>'}
   </div>
-  <div class="card"><h2>✨ Import syllabus with AI</h2><textarea id="sy" placeholder="Paste your syllabus text here and AI will split it into topics…"></textarea><div class="row"><button class="b" onclick="imp('${s.id}')">Extract topics</button></div><div class="mu" id="io"></div></div>`:'<div class="card mu">Add a subject above to start.</div>'}`;
+  <div class="card"><h2>✨ Import syllabus with AI</h2><textarea id="sy" placeholder="Paste your syllabus text here and AI will split it into topics…"></textarea><div class="row"><button class="b" onclick="imp('${s.id}')">Extract topics</button></div><div class="mu" id="io"></div><hr style="border:0;border-top:1px solid var(--bd)"><h2>🪄 No syllabus text? Let AI suggest topics</h2><div class="row"><input id="lvl" placeholder="Level / board, e.g. Class 12 CBSE, A-level, 1st-year B.Tech" style="flex:1;min-width:200px"><button class="b" onclick="sugT('${s.id}')">Suggest topics</button></div><div class="mu" id="sg"></div></div>`:'<div class="card mu">Add a subject above to start.</div>'}`;
 }
 const find=(a,b)=>{const s=S.subjects.find(x=>x.id==a);return [s,s&&b?s.topics.find(t=>t.id==b):null]};
 function addS(){const n=$("#n").value.trim();if(!n)return;if(S.subjects.length>=8)return alert("Maximum 8 subjects.");const s={id:uid(),name:n,start:$("#sd").value||ymd(new Date()),end:$("#ed").value,date:$("#d").value,target:Math.min(100,Math.max(0,+$("#t").value))||"",topics:[]};S.subjects.push(s);S.sel=s.id;save();render()}
@@ -142,6 +168,9 @@ function delT(a,b){const s=find(a)[0];s.topics=s.topics.filter(t=>t.id!=b);save(
 async function imp(id){const txt=$("#sy").value.trim();if(!txt)return;const o=$("#io");
   const r=await ai('Extract a clean list of study topics (max 40, short names) from this syllabus. Reply ONLY with JSON: {"topics":["..."]}\n\n'+txt,o,true);
   if(r&&r.topics){const s=find(id)[0];r.topics.forEach(n=>s.topics.push({id:uid(),name:String(n),conf:1,done:false}));save();render()}}
+async function sugT(id){const s=find(id)[0],o=$("#sg"),lv=($("#lvl").value||"").trim();
+  const r=await ai(`List the 12-20 most important syllabus topics/chapters (short names, in teaching order) for the subject "${s.name}"${lv?" at this level: "+lv:""}. Skip any already present: ${s.topics.map(t=>t.name).join(", ")||"none"}. Reply ONLY JSON: {"topics":["..."]}`,o,true);
+  if(r&&Array.isArray(r.topics)){const have=new Set(s.topics.map(t=>t.name.toLowerCase()));let n=0;r.topics.forEach(x=>{x=String(x).trim();if(x&&!have.has(x.toLowerCase())){s.topics.push({id:uid(),name:x,conf:1,done:false});have.add(x.toLowerCase());n++}});save();render();const e=$("#sg");if(e)e.textContent="Added "+n+" topics. Set your confidence on each one."}}
 function aiv(){
   const opts=S.subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("");
   $("#view").innerHTML=!S.subjects.length?'<div class="card mu">Add a subject first, then come back for your AI tutor.</div>':`
@@ -202,15 +231,16 @@ function todayCard(){const t0=ymd(new Date()),tt=S.tasks.filter(x=>x.date==t0),d
 function ready(s){if(!s.topics.length)return null;const t=s.topics.reduce((a,x)=>a+(x.done?.5:0)+((x.conf-1)/2)*.5,0)/s.topics.length,r=S.results.filter(x=>x.sid==s.id);if(!r.length)return Math.round(t*100);return Math.round((t*.6+r.reduce((a,x)=>a+x.pct,0)/r.length/100*.4)*100)}
 function trend(){const r=S.results.slice(-12);if(r.length<2)return'<div class="mu">Take 2 or more tests to see your score trend.</div>';const pts=r.map((x,i)=>[12+i*(276/(r.length-1)),90-x.pct*.8]);return `<svg viewBox="0 0 300 100" style="width:100%;height:120px"><polyline fill="none" stroke="var(--ac2)" stroke-width="2.5" points="${pts.map(q=>q.join(",")).join(" ")}"/>${pts.map((q,i)=>`<circle cx="${q[0]}" cy="${q[1]}" r="3.5" fill="var(--ac)"><title>${r[i].pct}%</title></circle>`).join("")}<text x="2" y="10" fill="var(--mu)" font-size="9">100%</text><text x="2" y="98" fill="var(--mu)" font-size="9">0%</text></svg>`}
 let BK="",BM="";
-function bkHtml(){if(!BK)return `<div class="row"><button class="b g" onclick="BK='out';render()">⬇ Backup data</button><button class="b g" onclick="BK='in';render()">⬆ Restore data</button></div>`;
- if(BK=="out")return `<div class="mu">Copy this text and keep it safe (Notes, email). Paste it into Restore to get everything back.</div><textarea id="bk" readonly onclick="this.select()">${esc(JSON.stringify({subjects:S.subjects,tasks:S.tasks,results:S.results,notes:S.notes,cards:S.cards,log:S.log}))}</textarea><div class="row"><button class="b" onclick="cpBk()">Copy</button><button class="b g" onclick="BK='';render()">Close</button></div>`;
+const bkData=()=>({subjects:S.subjects,tasks:S.tasks,results:S.results,notes:S.notes,cards:S.cards,log:S.log,mist:S.mist||[],chats:S.chats||{},maps:S.maps||[],mood:S.mood||{},cnt:S.cnt||{},xp:S.xp||0});
+function bkHtml(){if(!BK)return `<div class="row"><button class="b g" onclick="BK='out';render()">⬇ Backup (copy text)</button><button class="b g" onclick="BK='in';render()">⬆ Restore data</button><button class="b g" onclick="U.saveBackup()">💾 Backup file</button><button class="b g" onclick="U.exportCSV()">📅 Export planner (.csv)</button></div>`;
+ if(BK=="out")return `<div class="mu">Copy this text and keep it safe (Notes, email). Paste it into Restore to get everything back.</div><textarea id="bk" readonly onclick="this.select()">${esc(JSON.stringify(bkData()))}</textarea><div class="row"><button class="b" onclick="cpBk()">Copy</button><button class="b g" onclick="BK='';render()">Close</button></div>`;
  return `<div class="mu">Paste your backup text here:</div><textarea id="bk"></textarea><div class="row"><button class="b" onclick="rsBk()">Restore</button><button class="b g" onclick="BK='';BM='';render()">Cancel</button></div><div class="mu">${BM}</div>`}
 function cpBk(){const e=$("#bk");e.select();try{navigator.clipboard.writeText(e.value)}catch(x){document.execCommand("copy")}}
-function rsBk(){try{const d=JSON.parse($("#bk").value);if(!Array.isArray(d.subjects))throw 0;S.subjects=d.subjects;S.tasks=d.tasks||[];S.results=d.results||[];S.notes=d.notes||{};S.cards=d.cards||[];S.log=d.log||[];S.sel=null;BK="";BM="";save();render()}catch(e){BM="That isn't a valid backup.";render()}}
+function rsBk(){try{const d=JSON.parse($("#bk").value);if(!Array.isArray(d.subjects))throw 0;S.subjects=d.subjects;S.tasks=d.tasks||[];S.results=d.results||[];S.notes=d.notes||{};S.cards=d.cards||[];S.log=d.log||[];S.mist=d.mist||[];S.chats=d.chats||{};S.maps=d.maps||[];S.mood=d.mood||{};S.cnt=d.cnt||{};if(typeof d.xp=="number")S.xp=d.xp;S.sel=null;BK="";BM="";save();render()}catch(e){BM="That isn't a valid backup.";render()}}
 let RC="";
 const rmsg={plan:"Delete all planner sessions?",results:"Delete all test results and percentages?",prog:"Un-tick every topic and set them all back to Weak?",all:"Delete EVERYTHING: subjects, dates, planner and results?"};
 function resetCard(){return `<div class="card"><h2>💾 Backup &amp; 🔄 Reset</h2>${RC?"":bkHtml()}${RC?`<div class="ex">${rmsg[RC]} This can't be undone.</div><div class="row"><button class="b" style="background:var(--bad)" onclick="doReset()">Yes, reset</button><button class="b g" onclick="RC='';render()">Cancel</button></div>`:`<div class="row"><button class="b g" onclick="RC='plan';render()">Reset planner</button><button class="b g" onclick="RC='results';render()">Reset test results</button><button class="b g" onclick="RC='prog';render()">Reset syllabus progress</button><button class="b g" onclick="RC='all';render()">Reset everything</button></div>`}</div>`}
-function doReset(){if(RC=="plan")S.tasks=[];else if(RC=="results")S.results=[];else if(RC=="prog")S.subjects.forEach(s=>s.topics.forEach(t=>{t.done=false;t.conf=1}));else if(RC=="all"){if(TS)clearInterval(TS.id);TS=null;S.subjects=[];S.tasks=[];S.results=[];S.notes={};S.cards=[];S.log=[];S.sel=null;S.tab="dash";MSG=""}RC="";save();render()}
+function doReset(){if(RC=="plan")S.tasks=[];else if(RC=="results")S.results=[];else if(RC=="prog")S.subjects.forEach(s=>s.topics.forEach(t=>{t.done=false;t.conf=1}));else if(RC=="all"){if(TS)clearInterval(TS.id);TS=null;S.subjects=[];S.tasks=[];S.results=[];S.notes={};S.cards=[];S.log=[];S.mist=[];S.chats={};S.maps=[];S.mood={};S.cnt={};S.xp=0;S.q=null;S.seen=null;S.sel=null;S.tab="dash";MSG=""}RC="";save();render()}
 let PW=0,MSG="";
 const wkStart=o=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+o*7);return d};
 const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
@@ -225,7 +255,7 @@ function planv(){
  <div class="card top"><button class="b g" onclick="PW--;render()">◀</button><b>${fd2(ws)} – ${fd2(addDays(ws,6))}${PW==0?" · this week":""}</b><button class="b g" onclick="PW++;render()">▶</button></div>
  <div class="card"><h2>Weekly coverage</h2><div class="row">${cv.map(c=>`<span class="pill" style="background:${c.n?"rgba(45,212,167,.28)":"rgba(245,165,36,.35)"}">${c.n?"✅":"⚠"} ${esc(c.s.name)} ×${c.n}</span>`).join("")||'<span class="mu">No subjects active this week.</span>'}</div></div>`;
  const od=S.tasks.filter(x=>!x.done&&x.date<t0);
- if(od.length)h+=`<div class="card"><h2>⏰ Overdue</h2>${od.map(taskRow).join("")}</div>`;
+ if(od.length)h+=`<div class="card"><div class="top"><h2>⏰ Overdue (${od.length})</h2><button class="b" onclick="resched()">↪ Reschedule smartly</button></div>${od.map(taskRow).join("")}</div>`;
  for(let i=0;i<7;i++){const d=addDays(ws,i),k=ymd(d);
   const st=S.subjects.filter(s=>s.start==k),ex=S.subjects.filter(s=>s.date==k),ts=S.tasks.filter(x=>x.date==k);
   h+=`<div class="card"><h2>${k==t0?"Today · ":""}${d.toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"short"})}</h2>${st.map(s=>`<div class="ex" style="background:var(--ac)">▶ START: ${esc(s.name)}</div>`).join("")}${S.subjects.filter(s=>s.end==k).map(s=>`<div class="ex" style="background:var(--warn)">⏹ STUDY ENDS: ${esc(s.name)}</div>`).join("")}${ex.map(s=>`<div class="ex">🎯 EXAM: ${esc(s.name)}</div>`).join("")}${ts.map(taskRow).join("")||(ex.length||st.length||S.subjects.some(s=>s.end==k)?"":'<div class="mu">Free day</div>')}</div>`}
@@ -247,6 +277,10 @@ function autoW(){
     S.tasks.push({id:uid(),date,sid:s.id,title:t?"Study: "+t.name:"Revise "+s.name,min:mn,done:false});added++}})}
  MSG=added?`✅ Added ${added} sessions. Every subject now has ${per} per week until its exam.`:"Every subject already has enough sessions each week.";
  save();PW=0;render()}
+function resched(){const t0=ymd(new Date()),od=S.tasks.filter(x=>!x.done&&x.date<t0);let moved=0;
+ od.forEach(x=>{const s=S.subjects.find(q=>q.id==x.sid),lim=s&&s.date?ymd(addDays(new Date(s.date+"T00:00:00"),-1)):"9999";
+  for(let d=0;d<30;d++){const k=ymd(addDays(new Date(),d));if(k>lim)break;if(S.tasks.filter(q=>q.date==k&&!q.done).length<3){x.date=k;moved++;break}}});
+ MSG=moved?"↪ Moved "+moved+" overdue session(s) onto your next free days (max 3 per day, before the exam).":"No free slots found before the exam. Add days or shorten sessions.";save();render()}
 function addP(){const t=$("#pt").value.trim();if(!t||!$("#pd").value)return;S.tasks.push({id:uid(),date:$("#pd").value,sid:$("#ps").value,title:t,min:+$("#pm").value||30,done:false});save();render()}
 function togP(id){const x=S.tasks.find(t=>t.id==id);x.done=!x.done;x.doneOn=x.done?ymd(new Date()):"";save();render()}
 function delP(id){S.tasks=S.tasks.filter(t=>t.id!=id);save();render()}
@@ -322,7 +356,7 @@ function notev(){
 function nAI(k){const t=(S.notes[NS]||"").trim();if(!t){$("#no").textContent="Write some notes first.";return}ai((k=="sum"?"Summarise these notes into concise bullet points and highlight the 3 most likely exam topics:\n":"Write 5 exam-style questions with short model answers from these notes:\n")+t.slice(0,6000),$("#no"))}
 /* ===== STATS ===== */
 const minsOf=(sid,date)=>S.log.filter(x=>(!sid||x.sid==sid)&&(!date||x.date==date)).reduce((a,x)=>a+x.min,0)+S.tasks.filter(x=>x.done&&(!sid||x.sid==sid)&&(!date||x.doneOn==date)).reduce((a,x)=>a+x.min,0);
-function badges(){const st=streak(),tp=S.subjects.reduce((a,s)=>a+s.topics.filter(t=>t.done).length,0),mx=Math.max(0,...S.results.map(r=>r.pct));return [["🔥","3-day streak",st>=3],["🔥","7-day streak",st>=7],["📝","First test",S.results.length>0],["🎯","Scored 80%+",mx>=80],["💯","Scored 100%",mx>=100],["📚","5 subjects added",S.subjects.length>=5],["✅","10 topics done",tp>=10],["🃏","20 flashcards",S.cards.length>=20],["⏱","10 hours studied",minsOf()>=600]]}
+function badges(){const st=streak(),tp=S.subjects.reduce((a,s)=>a+s.topics.filter(t=>t.done).length,0),mx=Math.max(0,...S.results.map(r=>r.pct));return [["🔥","3-day streak",st>=3],["🔥","7-day streak",st>=7],["📝","First test",S.results.length>0],["🎯","Scored 80%+",mx>=80],["💯","Scored 100%",mx>=100],["📚","5 subjects added",S.subjects.length>=5],["✅","10 topics done",tp>=10],["🃏","20 flashcards",S.cards.length>=20],["⏱","10 hours studied",minsOf()>=600],["💬","Asked the AI tutor",((S.cnt||{}).chat||0)>=1],["✍️","Had an answer marked",((S.cnt||{}).mark||0)>=1],["📄","Finished a mock paper",((S.cnt||{}).mock||0)>=1],["🗺","Made a mind map",((S.cnt||{}).map||0)>=1],["🔍","Fixed 5 mistakes",(S.mist||[]).filter(m=>m.fixed).length>=5],["🔮","Checked your forecast",((S.cnt||{}).coach||0)>=1]]}
 function statv(){
  const days=[...Array(7)].map((_,i)=>ymd(addDays(new Date(),i-6))),vals=days.map(d=>minsOf("",d)),mx=Math.max(30,...vals),maxS=Math.max(30,...S.subjects.map(s=>minsOf(s.id)));
  $("#view").innerHTML=`<div class="grid"><div class="card"><div class="mu">Total study time</div><div class="big">${(minsOf()/60).toFixed(1)} h</div></div><div class="card"><div class="mu">Sessions done</div><div class="big">${S.tasks.filter(x=>x.done).length}</div></div><div class="card"><div class="mu">Tests taken</div><div class="big">${S.results.length}</div></div><div class="card"><div class="mu">Flashcards</div><div class="big">${S.cards.length}</div></div></div>
@@ -428,6 +462,448 @@ window.render=function(){_R();
  if(S.tab=="dash"){const v=$("#view");v.insertAdjacentHTML("afterbegin",hero());
   const g=v.querySelector(".grid");if(g)g.insertAdjacentHTML("afterend",quests())}
  chk()};
+window.GU={gain,boom,toast,bump};
+render();
+})();
+</script><script>
+/* ===== GradeUp v3: AI Studio (chat, answer lab, mock paper, mind map, mistakes, coach, study kit) ===== */
+(function(){
+"use strict";
+S.mist=S.mist||[];S.chats=S.chats||{};S.maps=S.maps||[];S.mood=S.mood||{};S.cnt=S.cnt||{};
+const U=window.U={};
+const G=()=>window.GU||{gain(){},boom(){},toast(){},bump(){}};
+const sv=()=>save();
+const sub=id=>S.subjects.find(s=>s.id==id);
+const subNm=id=>{const s=sub(id);return s?s.name:"?"};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const ctr=k=>{S.cnt[k]=(S.cnt[k]||0)+1;sv()};
+const todayS=()=>ymd(new Date());
+let CUR="";
+const curSub=()=>{let s=sub(CUR);if(!s){s=S.subjects[0];CUR=s?s.id:""}return s};
+U.setCur=v=>{CUR=v;render()};
+U.go=k=>{S.tab=k;save();render()};
+const errTxt=e=>{const c=e&&e.code;return c=="not_granted"?"AI access was declined. Reload the page and allow it to use the AI tools.":c=="rate_limited"?"Too many AI requests at once. Wait a few seconds and try again.":c=="cancelled"?"Stopped.":"AI problem: "+((e&&e.message)||c||"unknown")+" Please try again."};
+const SYS="You are an expert exam coach and tutor helping a student score higher. Be accurate, concrete, concise and encouraging. Use plain text with simple '-' bullets; never use markdown tables. ";
+async function ask(prompt,el,o){o=o||{};
+  if(!AI){if(el)el.innerHTML='<span class="mu">🤖 AI tools only work when this page is opened inside Claude.</span>';return null}
+  if(el)el.textContent="Thinking…";
+  try{const op={};if(o.tier)op.modelTier=o.tier;if(o.fresh)op.cache=false;
+    if(o.json)return await AI.json(SYS+prompt,op);
+    op.onText=({text})=>{if(el)el.innerHTML=fmt(text)};
+    const r=await AI(SYS+prompt,op);if(el)el.innerHTML=fmt(r.text);return r.text}
+  catch(e){if(el)el.textContent=errTxt(e);return null}}
+const run=async(b,f)=>{if(b&&b.dataset.busy)return;if(b){b.dataset.busy=1;b.disabled=true}
+  try{return await f()}catch(e){console.error(e)}finally{if(b){delete b.dataset.busy;b.disabled=false}}};
+const ul=a=>Array.isArray(a)&&a.length?`<ul>${a.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:'<div class="mu">—</div>';
+const topicSel=(id,s,weak)=>`<select id="${id}" style="flex:1;min-width:140px"><option value="">All topics</option>${weak?'<option value="__weak">⚠ Weak topics only</option>':""}${s.topics.map(t=>`<option>${esc(t.name)}</option>`).join("")}</select>`;
+const topicVal=(id,s)=>{const el=$("#"+id);const v=el?el.value:"";if(v=="__weak")return s.topics.filter(t=>t.conf==1&&!t.done).map(t=>t.name).join("; ");return v};
+const scope=(s,tp)=>tp?`topic(s): ${tp}`:`all topics: ${s.topics.map(t=>t.name).join(", ")||"the general syllabus"}`;
+const subBar=s=>`<div class="row"><select onchange="U.setCur(this.value)" style="flex:1">${sopts(s.id)}</select></div>`;
+const recent=s=>S.results.filter(r=>r.sid==s.id).slice(-5).map(r=>r.label+" "+r.pct+"%").join("; ")||"none yet";
+const matchTopic=(s,name)=>s&&name?s.topics.find(t=>t.name.toLowerCase()==String(name).toLowerCase()):null;
+async function saveFile(name,data,mime){
+  try{const d=await claude.use("downloads");if(d){try{await d.save({filename:name,data});return true}catch(e){if(e&&e.code=="declined")return false}}}catch(e){}
+  try{const b=new Blob([data],{type:mime||"text/plain"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},600);return true}catch(e){return false}}
+async function copyTxt(t){try{await navigator.clipboard.writeText(t);return true}catch(e){}
+  try{const x=document.createElement("textarea");x.value=t;document.body.appendChild(x);x.select();const ok=document.execCommand("copy");x.remove();return ok}catch(e){return false}}
+
+/* ---------- mistakes store ---------- */
+function addMist(m){if(S.mist.some(x=>x.sid==m.sid&&x.q==m.q&&!x.fixed))return false;
+  S.mist.unshift(Object.assign({id:uid(),date:todayS(),fixed:false},m));if(S.mist.length>300)S.mist.length=300;sv();return true}
+
+/* =====================================================
+   1. AI CHAT
+===================================================== */
+const PERSONAS={friendly:["😊 Friendly teacher","Explain clearly in simple steps with one example. End with one short question to check understanding."],
+  socratic:["🧭 Socratic coach","Do NOT give the final answer straight away. Ask 1-2 guiding questions, give a hint if the student is stuck, and confirm when they get there."],
+  examiner:["🧑‍⚖️ Strict examiner","Answer like a mark scheme: say what earns each mark, which marks are commonly lost, and the exact keywords examiners want."],
+  eli5:["🧸 Explain like I'm 10","Use very simple words, everyday analogies and short sentences."]};
+let chatP="friendly",chatBusy=false;
+const bubbles=m=>m.length?m.map(x=>`<div class="bub ${x.r=="u"?"me":"ai"}">${x.r=="u"?esc(x.t).replace(/\n/g,"<br>"):(x.t?fmt(x.t):'<span class="mu">Thinking…</span>')}</div>`).join(""):`<div class="bub ai">Hi! I'm your AI tutor. Pick a style above, then ask me anything about your subject, or tap a quick prompt.</div>`;
+function chatv(){
+  if(!S.subjects.length){$("#view").innerHTML=none;return}
+  const s=curSub(),m=S.chats[s.id]||[];
+  $("#view").innerHTML=`<div class="card"><div class="row"><select onchange="U.setCur(this.value)" style="flex:1">${sopts(s.id)}</select><select onchange="U.persona(this.value)" style="flex:1">${Object.entries(PERSONAS).map(([k,v])=>`<option value="${k}" ${k==chatP?"selected":""}>${v[0]}</option>`).join("")}</select></div>
+  <div class="chips">${["Explain my weakest topic","Quiz me one question at a time","What will examiners ask?","Make a 20-minute revision plan","I don't understand…"].map(t=>`<button class="chip" onclick="U.chatQuick(this.textContent)">${t}</button>`).join("")}</div>
+  <div id="clog" class="clog">${bubbles(m)}</div>
+  <div class="row"><textarea id="cin" rows="2" placeholder="Ask anything about ${esc(s.name)}…" style="flex:1;min-height:48px" onkeydown="if(event.key=='Enter'&&!event.shiftKey){event.preventDefault();U.chatSend()}"></textarea><button class="b" onclick="U.chatSend()">Send</button></div>
+  <div class="row"><button class="b g" onclick="U.chatClear()">🗑 Clear this chat</button><span class="mu">Enter = send · Shift+Enter = new line</span></div></div>`;
+  const l=$("#clog");if(l)l.scrollTop=l.scrollHeight}
+function refreshLog(){const s=curSub(),l=$("#clog");if(!l||!s)return;l.innerHTML=bubbles(S.chats[s.id]||[]);l.scrollTop=l.scrollHeight}
+U.persona=v=>{chatP=v};
+U.chatClear=()=>{const s=curSub();if(s){S.chats[s.id]=[];sv();refreshLog()}};
+U.chatQuick=t=>{if(t.endsWith("…")){const i=$("#cin");if(i){i.value=t.slice(0,-1)+" ";i.focus()}return}U.chatSend(t)};
+U.chatSend=async txt=>{
+  const s=curSub();if(!s||chatBusy)return;const inp=$("#cin"),t=String(txt||(inp&&inp.value)||"").trim();if(!t)return;
+  const L=S.chats[s.id]=S.chats[s.id]||[];
+  if(!AI){L.push({r:"u",t},{r:"a",t:"🤖 AI tools only work when this page is opened inside Claude.",err:1});if(inp)inp.value="";refreshLog();return}
+  L.push({r:"u",t},{r:"a",t:""});if(inp)inp.value="";chatBusy=true;refreshLog();
+  let hist=L.slice(0,-1).filter(x=>x.t&&!x.err).slice(-12);
+  const merged=[];hist.forEach(x=>{const role=x.r=="u"?"user":"assistant";if(merged.length&&merged[merged.length-1].role==role)merged[merged.length-1].content+="\n"+x.t;else merged.push({role,content:x.t})});
+  while(merged.length&&merged[0].role!="user")merged.shift();
+  const pre=`${SYS}Teaching style: ${PERSONAS[chatP][1]}\nStudent data: ${ctx(s)}. Recent results: ${recent(s)}.\nKeep replies under 180 words unless the student asks for more.\n\nConversation follows. Reply to the last student message.\n\n`;
+  if(merged.length)merged[0].content=pre+merged[0].content;
+  const last=L[L.length-1];
+  try{const r=await AI(merged,{cache:false,onText:({text})=>{last.t=text;refreshLog()}});last.t=r.text;ctr("chat")}
+  catch(e){last.err=1;last.t=(e&&e.text?e.text+"\n\n":"")+"⚠ "+errTxt(e)}
+  chatBusy=false;if(L.length>40)L.splice(0,L.length-40);sv();refreshLog()};
+
+/* =====================================================
+   2. ANSWER LAB
+===================================================== */
+const LAB={mode:"mark",q:"",a:"",marks:6,res:null,fa:"",fres:null};
+U.lab=LAB;
+const markHTML=r=>`<div class="lres"><div class="row"><div class="sc">${r.score}/${r.max}</div><div><b>${r.pct}% · Grade ${grade(r.pct)}</b><div class="mu">${r.pct>=80?"Excellent work!":r.pct>=60?"Good. A few marks to pick up.":"Let's fix this. Read what was missing."}</div></div></div>
+  <h3>👍 What earned marks</h3>${ul(r.strengths)}<h3>❌ What was missing</h3>${ul(r.missing)}
+  <h3>🏅 Full-mark answer</h3><div class="out good">${esc(r.better)}</div>${r.tip?`<h3>💡 Tip</h3><div>${esc(r.tip)}</div>`:""}
+  <div class="row"><button class="b" onclick="U.labSave()" ${r.saved?"disabled":""}>${r.saved?"✅ Added to results":"➕ Add to my % results"}</button><button class="b g" onclick="U.labAgain()">✏️ Try again</button></div></div>`;
+const feynHTML=r=>{const avg=(r.clarity+r.accuracy)/2;return `<div class="lres"><div class="row"><div class="sc">${r.clarity}/10</div><span class="mu">clarity</span><div class="sc">${r.accuracy}/10</div><span class="mu">accuracy</span></div>
+  <div class="good">${esc(r.verdict)}</div><h3>🕳 Gaps in your explanation</h3>${ul(r.gaps)}<h3>⚠ Misconceptions</h3>${ul(r.misconceptions)}<h3>❓ Questions a teacher would ask next</h3>${ul(r.questions)}
+  <div class="row">${avg>=7&&r.topic?`<button class="b" onclick="U.feynStrong()">🟢 Mark "${esc(r.topic)}" as Strong</button>`:""}<button class="b g" onclick="U.feynAgain()">✏️ Explain again</button></div></div>`};
+function labv(){
+  if(!S.subjects.length){$("#view").innerHTML=none;return}
+  const s=curSub(),modes=[["mark","✍️ Mark my answer"],["feyn","🧑‍🏫 Explain it back"]];
+  let body="";
+  if(LAB.mode=="mark")body=`<div class="card"><h2>Exam answer marker</h2><div class="mu">Write a real exam answer. The AI marks it like an examiner, shows the marks you lost and gives a full-mark answer.</div>
+  <div class="row">${topicSel("lt",s)}<input id="lm2" type="number" min="1" max="40" value="${LAB.marks}" style="width:90px" title="Marks available" oninput="U.lab.marks=this.value"><button class="b g" onclick="U.labQ(this)">✨ Give me a question</button></div><div class="mu" id="lst"></div>
+  <textarea placeholder="Question (type your own, or tap ✨)" oninput="U.lab.q=this.value">${esc(LAB.q)}</textarea>
+  <textarea style="min-height:170px;margin-top:8px" placeholder="Your answer…" oninput="U.lab.a=this.value;U.wc(this.value)">${esc(LAB.a)}</textarea>
+  <div class="row"><button class="b" onclick="U.labMark(this)">Mark it</button><span class="mu" id="wc"></span></div></div>
+  <div class="card" id="lr" ${LAB.res?"":'style="display:none"'}>${LAB.res?markHTML(LAB.res):""}</div>`;
+  else body=`<div class="card"><h2>Explain it back (Feynman technique)</h2><div class="mu">If you can teach it simply, you know it. Pick a topic and explain it in your own words, as if to a 12-year-old. The AI finds gaps and misconceptions.</div>
+  <div class="row">${topicSel("ft2",s)}</div>
+  <textarea style="min-height:170px" placeholder="Explain the topic in your own words…" oninput="U.lab.fa=this.value">${esc(LAB.fa)}</textarea>
+  <div class="row"><button class="b" onclick="U.feyn(this)">Check my understanding</button></div><div class="mu" id="fst"></div></div>
+  <div class="card" id="fr" ${LAB.fres?"":'style="display:none"'}>${LAB.fres?feynHTML(LAB.fres):""}</div>`;
+  $("#view").innerHTML=subBar(s)+`<div class="chips" style="justify-content:flex-start">${modes.map(([k,l])=>`<button class="chip ${LAB.mode==k?"on":""}" onclick="U.lab.mode='${k}';render()">${l}</button>`).join("")}</div>`+body;
+  U.wc(LAB.a)}
+U.wc=v=>{const e=$("#wc");if(e)e.textContent=(String(v).trim()?String(v).trim().split(/\s+/).length:0)+" words"};
+U.labQ=b=>run(b,async()=>{const s=curSub(),tp=topicVal("lt",s),mk=clamp(+LAB.marks||6,1,40),o=$("#lst");
+  const r=await ask(`Write ONE challenging exam question worth ${mk} marks for ${s.name}, ${scope(s,tp)}. It must need explanation or reasoning, not just recall. Reply ONLY JSON: {"q":"the question text"}`,o,{json:true,fresh:true});
+  if(r&&r.q){LAB.q=String(r.q);LAB.a="";LAB.res=null;render()}});
+U.labMark=b=>run(b,async()=>{const s=curSub(),q=LAB.q.trim(),a=LAB.a.trim(),mk=clamp(+LAB.marks||6,1,40),box=$("#lr");
+  if(!q||a.length<15){box.style.display="";box.innerHTML='<div class="warn">Type a question and a real answer (at least a sentence or two) first.</div>';return}
+  box.style.display="";
+  const r=await ask(`Act as a strict but fair examiner for ${s.name}. Mark the student's answer out of ${mk}.\nQuestion: ${q}\nStudent answer: ${a}\nStudent's target score: ${tg(s)}.\nReply ONLY JSON: {"score":number between 0 and ${mk} (halves allowed),"strengths":["what earned marks"],"missing":["specific points or keywords that lost marks"],"better":"a full-mark model answer","tip":"one tip to gain more marks next time","topic":"the best matching topic from: ${s.topics.map(t=>t.name).join(", ")||"none"} (or empty)"}`,box,{json:true,tier:"complex",fresh:true});
+  if(!r)return;
+  const score=clamp(Math.round((+r.score||0)*2)/2,0,mk),pct=Math.round(score/mk*100);
+  LAB.res={sid:s.id,q,score,max:mk,pct,strengths:r.strengths,missing:r.missing,better:String(r.better||""),tip:String(r.tip||""),saved:false};
+  const t=matchTopic(s,r.topic);if(t&&pct<50){t.conf=1}
+  ctr("mark");G().gain(Math.round(pct/10)+3,"Answer marked: "+pct+"%");if(pct>=80)G().boom(90);
+  box.innerHTML=markHTML(LAB.res);box.scrollIntoView({behavior:"smooth",block:"nearest"})});
+U.labSave=()=>{const r=LAB.res;if(!r||r.saved)return;S.results.push({id:uid(),sid:r.sid,date:todayS(),pct:r.pct,label:"Answer: "+r.q.slice(0,30)});r.saved=true;sv();render()};
+U.labAgain=()=>{LAB.a="";LAB.res=null;render()};
+U.feyn=b=>run(b,async()=>{const s=curSub(),tp=topicVal("ft2",s),a=LAB.fa.trim(),box=$("#fr");
+  if(a.length<30){box.style.display="";box.innerHTML='<div class="warn">Explain it in a few sentences first (at least 30 characters).</div>';return}
+  box.style.display="";
+  const r=await ask(`A student is using the Feynman technique for ${s.name}${tp?", topic: "+tp:""}. They explained it in their own words:\n"""${a.slice(0,4000)}"""\nEvaluate honestly like a patient teacher. Reply ONLY JSON: {"clarity":0-10 integer,"accuracy":0-10 integer,"gaps":["important things they left out"],"misconceptions":["things that are wrong or fuzzy, with the correction"],"questions":["2-3 probing follow-up questions"],"verdict":"one encouraging sentence","topic":"${tp||""}"}`,box,{json:true,tier:"complex",fresh:true});
+  if(!r)return;
+  LAB.fres={clarity:clamp(Math.round(+r.clarity||0),0,10),accuracy:clamp(Math.round(+r.accuracy||0),0,10),gaps:r.gaps,misconceptions:r.misconceptions,questions:r.questions,verdict:String(r.verdict||""),topic:tp&&!tp.includes(";")?tp:""};
+  const avg=(LAB.fres.clarity+LAB.fres.accuracy)/2,d=S.cnt.fday&&S.cnt.fday.d==todayS()?S.cnt.fday:{d:todayS(),n:0};
+  if(avg>=7&&d.n<3){d.n++;S.cnt.fday=d;sv();G().gain(6,"Taught it back well")}
+  box.innerHTML=feynHTML(LAB.fres)});
+U.feynStrong=()=>{const s=curSub(),t=matchTopic(s,LAB.fres&&LAB.fres.topic);if(t){t.conf=3;sv();G().toast("🟢 "+t.name+" is now Strong");render()}};
+U.feynAgain=()=>{LAB.fa="";LAB.fres=null;render()};
+
+/* =====================================================
+   3. MOCK PAPER
+===================================================== */
+const MPS={len:"s",diff:"Hard"};let MP=null,mpTimer=0;
+const MLEN={q:{m:6,s:2,l:1,t:30,n:"Quick · about 30 min"},s:{m:8,s:4,l:2,t:60,n:"Standard · about 60 min"},f:{m:10,s:5,l:3,t:90,n:"Full · about 90 min"}};
+XS.hideReset=()=>!!(MP&&MP.qs);
+const answered=()=>MP?MP.qs.filter((x,i)=>{const a=MP.ans[i];return a!==undefined&&String(a).trim()!==""}).length:0;
+function cleanQs(a){return (Array.isArray(a)?a:[]).map(x=>{if(!x||!x.q)return null;
+  const t=["mcq","short","long"].includes(x.type)?x.type:(Array.isArray(x.options)?"mcq":"short");
+  if(t=="mcq"){const o=(x.options||[]).map(String).slice(0,4);if(o.length<2)return null;const a=+x.a;return{type:t,q:String(x.q),options:o,a:a>=0&&a<o.length?a:0,marks:1,topic:String(x.topic||""),why:String(x.why||"")}}
+  return{type:t,q:String(x.q),marks:clamp(Math.round(+x.marks||(t=="long"?8:4)),1,20),topic:String(x.topic||""),model:String(x.model||x.why||"")}}).filter(Boolean)}
+function mockv(){
+  if(!S.subjects.length){$("#view").innerHTML=none;return}
+  if(MP&&MP.marking)return mockMarking();
+  if(MP&&MP.qs)return MP.done?mockResult():mockExam();
+  const s=curSub(),past=S.results.filter(r=>String(r.label).startsWith("Mock")).slice(-5).reverse();
+  $("#view").innerHTML=`${subBar(s)}<div class="card"><h2>📄 Full mock exam paper</h2><div class="mu">A real exam experience: multiple-choice, short-answer and long-answer sections, with a countdown. When you submit, the AI marks every written answer against model marking points and saves your %.</div>
+  <div class="row">${topicSel("mt",s,true)}</div>
+  <div class="row"><select id="ml" style="flex:1">${Object.entries(MLEN).map(([k,v])=>`<option value="${k}" ${MPS.len==k?"selected":""}>${v.n}</option>`).join("")}</select><select id="md" style="flex:1">${["Moderate","Hard","Very hard (top-grade)"].map(x=>`<option ${MPS.diff==x?"selected":""}>${x}</option>`).join("")}</select></div>
+  <div class="row"><button class="b" onclick="U.mockGen(this)">Generate paper</button></div><div class="mu" id="mst">Generating a full paper can take up to a minute.</div></div>
+  ${past.length?`<div class="card"><h2>Recent mock results</h2>${past.map(r=>`<div class="tp"><span class="n">${esc(r.label)} <span class="mu">· ${esc(subNm(r.sid))} · ${r.date}</span></span><span class="pill">${r.pct}% · ${grade(r.pct)}</span></div>`).join("")}</div>`:""}`}
+U.mockGen=b=>run(b,async()=>{const s=curSub(),tp=topicVal("mt",s),k=$("#ml").value,cfg=MLEN[k],hard=$("#md").value,el=$("#mst");MPS.len=k;MPS.diff=hard;
+  const r=await ask(`Create a realistic ${hard} exam paper for ${s.name} covering ${scope(s,tp)}. The student's target score is ${tg(s)}.
+Include exactly ${cfg.m} multiple-choice questions (1 mark each, 4 options), ${cfg.s} short-answer questions (4 marks each) and ${cfg.l} long-answer questions (8 marks each), in that order. Questions should test application and reasoning like a real board exam, with plausible distractors. For written questions give "model" = a model answer listing the key marking points.
+Reply ONLY JSON: {"title":"","questions":[{"type":"mcq","q":"","options":["","","",""],"a":0,"marks":1,"topic":"","why":"short explanation"},{"type":"short","q":"","marks":4,"topic":"","model":""},{"type":"long","q":"","marks":8,"topic":"","model":""}]} where "a" is the 0-3 index of the correct option; vary its position.`,el,{json:true,tier:"complex",fresh:true});
+  if(!r)return;const qs=cleanQs(r.questions);
+  if(qs.length<3){el.textContent="The AI returned an unusable paper. Please try again.";return}
+  MP={sid:s.id,title:String(r.title||s.name+" mock paper"),qs,ans:{},left:cfg.t*60,total:cfg.t*60,done:false,marking:false,sure:false};
+  startMock();render()});
+function startMock(){clearInterval(mpTimer);mpTimer=setInterval(()=>{if(!MP||MP.done||MP.marking){clearInterval(mpTimer);return}MP.left--;const e=$("#mt2");if(e)e.textContent="⏱ "+fm(Math.max(0,MP.left));if(MP.left<=0){clearInterval(mpTimer);U.mockSubmit(true)}},1000)}
+function mockExam(){
+  const q=MP.qs;let h=`<div class="card top" style="position:sticky;top:env(safe-area-inset-top,0px);z-index:5"><b>${esc(MP.title)}</b><span><span class="pill" id="mans">${answered()}/${q.length} answered</span> <b id="mt2">⏱ ${fm(Math.max(0,MP.left))}</b></span></div>`,last="";
+  q.forEach((x,i)=>{if(x.type!=last){last=x.type;h+=`<div class="mu" style="margin:10px 2px 4px"><b>${x.type=="mcq"?"Section A · Multiple choice":x.type=="short"?"Section B · Short answer":"Section C · Long answer"}</b></div>`}
+    h+=`<div class="card"><div class="top"><div><b>Q${i+1}.</b> ${esc(x.q)}</div><span class="pill">${x.marks} mark${x.marks>1?"s":""}</span></div>`+
+    (x.type=="mcq"?x.options.map((o,j)=>`<label class="opt"><input type="radio" name="mq${i}" style="width:auto" ${MP.ans[i]===j?"checked":""} onchange="U.mans(${i},${j})"> ${"ABCD"[j]}. ${esc(o)}</label>`).join(""):`<textarea style="min-height:${x.type=="long"?170:90}px;margin-top:8px" placeholder="Your answer…" oninput="U.mans(${i},this.value)">${esc(MP.ans[i]||"")}</textarea>`)+`</div>`});
+  h+=MP.sure?`<div class="warn" style="margin-bottom:8px">You left ${q.length-answered()} question(s) unanswered. Press <b>Submit paper</b> again to hand in anyway.</div>`:"";
+  h+=`<div class="row"><button class="b" onclick="U.mockSubmit(false)">Submit paper</button><button class="b g" onclick="U.mockCancel()">Cancel paper</button></div>`;
+  $("#view").innerHTML=h}
+U.mans=(i,v)=>{if(!MP)return;MP.ans[i]=v;MP.sure=false;const e=$("#mans");if(e)e.textContent=answered()+"/"+MP.qs.length+" answered"};
+U.mockCancel=()=>{clearInterval(mpTimer);MP=null;render()};
+U.mockSubmit=async force=>{if(!MP||MP.done||MP.marking)return;
+  if(!force&&!MP.sure&&MP.qs.length-answered()>0){MP.sure=true;render();return}
+  clearInterval(mpTimer);MP.marking=true;MP.err="";render();await markMock()};
+function mockMarking(){$("#view").innerHTML=`<div class="card" style="text-align:center"><h2>📝 ${MP.err?"Marking problem":"Marking your paper…"}</h2>${MP.err?`<div class="warn">${esc(MP.err)}</div><div class="row" style="justify-content:center"><button class="b" onclick="U.mockRetry()">Retry marking</button><button class="b g" onclick="U.mockMcqOnly()">Score multiple-choice only</button></div>`:'<div class="mu">The AI examiner is reading each written answer against the marking points. This can take up to a minute. Please keep this page open.</div>'}</div>`}
+U.mockRetry=async()=>{if(!MP)return;MP.err="";render();await markMock()};
+U.mockMcqOnly=()=>{if(!MP)return;MP.qs.forEach(x=>{if(x.type!="mcq"&&x.got===undefined)x.skip=true});finishMock()};
+async function markMock(){
+  const qs=MP.qs;
+  qs.forEach((x,i)=>{if(x.type=="mcq")x.got=MP.ans[i]===x.a?x.marks:0});
+  const wr=qs.map((x,i)=>({x,i})).filter(o=>o.x.type!="mcq");
+  wr.forEach(o=>{if(!String(MP.ans[o.i]||"").trim()){o.x.got=0;o.x.fb="No answer given."}});
+  const todo=wr.filter(o=>o.x.got===undefined);
+  if(todo.length){
+    if(!AI){MP.err="AI marking only works when this page is opened inside Claude.";render();return}
+    const payload=todo.map(o=>({i:o.i,question:o.x.q,max_marks:o.x.marks,marking_points:o.x.model,student_answer:String(MP.ans[o.i]).slice(0,3000)}));
+    try{const r=await AI.json(SYS+`Mark these exam answers like a fair examiner. Award marks only for points that match the marking points or are clearly correct. Allow halves. Reply ONLY JSON: {"results":[{"i":number,"score":number,"feedback":"one or two sentences: what earned marks and what was missing"}]}\n`+JSON.stringify(payload),{modelTier:"complex",cache:false});
+      const arr=Array.isArray(r&&r.results)?r.results:[];
+      todo.forEach(o=>{const m=arr.find(z=>+z.i===o.i);if(m){o.x.got=clamp(Math.round((+m.score||0)*2)/2,0,o.x.marks);o.x.fb=String(m.feedback||"")}else{o.x.got=0;o.x.fb="Could not be marked, counted as 0."}})}
+    catch(e){MP.err=errTxt(e);render();return}}
+  finishMock()}
+function finishMock(){
+  const qs=MP.qs.filter(x=>!x.skip),tot=qs.reduce((a,x)=>a+(x.got||0),0),max=qs.reduce((a,x)=>a+x.marks,0)||1,pct=Math.round(tot/max*100);
+  MP.tot=tot;MP.max=max;MP.pct=pct;MP.done=true;MP.marking=false;MP.mins=Math.max(1,Math.round((MP.total-MP.left)/60));
+  S.results.push({id:uid(),sid:MP.sid,date:todayS(),pct,label:"Mock: "+MP.title.slice(0,34)});
+  MP.qs.forEach((x,i)=>{if(x.skip)return;const t=matchTopic(sub(MP.sid),x.topic);
+    if(x.type=="mcq"&&x.got===0){addMist({sid:MP.sid,type:"mcq",q:x.q,options:x.options,a:x.a,pick:MP.ans[i]===undefined?-1:MP.ans[i],why:x.why,topic:x.topic,src:"Mock"});if(t)t.conf=1}
+    else if(x.type!="mcq"&&x.got<x.marks*.6){addMist({sid:MP.sid,type:"written",q:x.q,why:"Model answer:\n"+x.model+(x.fb?"\nFeedback: "+x.fb:""),topic:x.topic,src:"Mock"});if(t&&x.got<x.marks*.4)t.conf=1}});
+  ctr("mock");sv();G().gain(Math.round(pct/4)+8,"Mock paper: "+pct+"%");if(pct>=75)G().boom(150);render()}
+function mockResult(){
+  const secs=[["mcq","Section A · Multiple choice"],["short","Section B · Short answer"],["long","Section C · Long answer"]];
+  let h=`<div class="card" style="text-align:center"><div class="mu">${esc(MP.title)}</div><div class="sc" style="font-size:44px">${MP.tot}/${MP.max}</div><div class="big">${MP.pct}% · Grade ${grade(MP.pct)}</div><div class="mu">Finished in ${MP.mins} min · saved to your results · wrong answers added to Mistakes</div>
+  ${secs.map(([t,n])=>{const a=MP.qs.filter(x=>x.type==t&&!x.skip);if(!a.length)return"";const g=a.reduce((p,x)=>p+(x.got||0),0),m=a.reduce((p,x)=>p+x.marks,0);return `<div class="row" style="justify-content:center"><span class="mu" style="min-width:190px;text-align:left">${n}</span><div class="bar" style="width:140px"><i style="width:${g/m*100}%"></i></div><span class="mu">${g}/${m}</span></div>`}).join("")}
+  <div class="row" style="justify-content:center"><button class="b" onclick="U.mockCancel()">Done</button><button class="b g" onclick="U.mockCancel();setTimeout(()=>U.go('mist'),0)">🔍 Review mistakes</button></div></div>`;
+  MP.qs.forEach((x,i)=>{if(x.skip)return;const ok=x.got>=x.marks;
+    h+=`<div class="card"><div class="top"><div><b>Q${i+1}.</b> ${esc(x.q)}</div><span class="pill" style="background:${ok?"rgba(45,212,167,.35)":x.got>0?"rgba(245,165,36,.35)":"rgba(239,68,68,.35)"}">${x.got}/${x.marks}</span></div>`+
+    (x.type=="mcq"?x.options.map((o,j)=>`<div class="opt ${j==x.a?"ok":MP.ans[i]===j?"no":""}">${"ABCD"[j]}. ${esc(o)}</div>`).join("")+(x.why?`<div class="mu out" style="margin-top:6px">💡 ${esc(x.why)}</div>`:"")
+     :`<div class="mu" style="margin-top:6px">Your answer</div><div class="out">${esc(MP.ans[i]||"(blank)")}</div>${x.fb?`<div class="good" style="margin-top:6px">🧑‍⚖️ ${esc(x.fb)}</div>`:""}<details class="dt"><summary>Show model answer</summary><div class="out">${esc(x.model)}</div></details>`)+`</div>`});
+  $("#view").innerHTML=h}
+
+/* =====================================================
+   4. MIND MAP
+===================================================== */
+const PAL=["#5b8cff","#2dd4a7","#c4b5fd","#f5a524","#38bdf8","#f472b6","#a3e635","#fb923c"];
+let MM=null,mmOpt="over";
+function wrapT(t,n,mx){const w=String(t).split(/\s+/),L=[];let c="";w.forEach(x=>{if((c+" "+x).trim().length>n&&c){L.push(c);c=x}else c=(c+" "+x).trim()});if(c)L.push(c);if(L.length>mx){L.length=mx;L[mx-1]=L[mx-1].slice(0,-1)+"…"}return L.length?L:[""]}
+function mapSVG(m){
+  const br=m.branches,rowH=46;let y=30;
+  br.forEach(b=>{b.ys=[];(b.children.length?b.children:[""]).forEach(()=>{b.ys.push(y);y+=rowH});b.y=(b.ys[0]+b.ys[b.ys.length-1])/2;y+=14});
+  const W=900,H=y+10,cy=H/2;
+  let s=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" font-family="system-ui,Segoe UI,Roboto,sans-serif"><rect width="${W}" height="${H}" fill="#0b1b45"/>`;
+  br.forEach((b,i)=>{const c=PAL[i%PAL.length];
+    s+=`<path d="M170 ${cy} C 230 ${cy}, 220 ${b.y}, 280 ${b.y}" stroke="${c}" stroke-width="3" fill="none"/>`;
+    b.children.forEach((k,j)=>{const ky=b.ys[j],L=wrapT(k,34,2);
+      s+=`<path d="M440 ${b.y} C 500 ${b.y}, 500 ${ky}, 560 ${ky}" stroke="${c}" stroke-width="2" fill="none" opacity=".8"/><rect x="560" y="${ky-17}" width="320" height="34" rx="9" fill="${c}" fill-opacity=".16" stroke="${c}" stroke-opacity=".7"/>`+
+      L.map((l,q)=>`<text x="570" y="${ky+(L.length==1?5:q?12:-3)}" fill="#eaf0ff" font-size="${L.length==1?13:11.5}">${esc(l)}</text>`).join("")});
+    const B=wrapT(b.name,20,2);
+    s+=`<rect x="280" y="${b.y-20}" width="160" height="40" rx="12" fill="${c}"/>`+B.map((l,q)=>`<text x="360" y="${b.y+(B.length==1?5:q?13:-3)}" text-anchor="middle" fill="#061233" font-size="13" font-weight="700">${esc(l)}</text>`).join("")});
+  const C=wrapT(m.center,14,3);
+  s+=`<rect x="10" y="${cy-34}" width="160" height="68" rx="18" fill="#2dd4a7"/>`+C.map((l,q)=>`<text x="90" y="${cy+4+(q-(C.length-1)/2)*16}" text-anchor="middle" fill="#04122e" font-size="14" font-weight="800">${esc(l)}</text>`).join("");
+  return s+"</svg>"}
+function cleanMap(r,fb){if(!r||!Array.isArray(r.branches))return null;
+  const br=r.branches.slice(0,8).map(b=>({name:String(b&&(b.name||b.title)||"").trim(),children:(Array.isArray(b&&b.children)?b.children:[]).slice(0,5).map(c=>String(typeof c=="string"?c:c&&(c.name||c.title)||"").trim()).filter(Boolean)})).filter(b=>b.name);
+  if(br.length<2)return null;return{center:String(r.center||fb).trim()||fb,branches:br}}
+function mapv(){
+  if(!S.subjects.length){$("#view").innerHTML=none;return}
+  const s=curSub();
+  $("#view").innerHTML=`${subBar(s)}<div class="card"><h2>🗺 AI mind map</h2><div class="mu">Turn any topic into a visual map of branches and key facts. Great for seeing how ideas connect.</div>
+  <div class="row">${topicSel("mpt",s)}<select id="mpo" style="width:auto"><option value="over" ${mmOpt=="over"?"selected":""}>Overview</option><option value="det" ${mmOpt=="det"?"selected":""}>Detailed</option></select><button class="b" onclick="U.mapGen(this)">Generate map</button></div><div class="mu" id="mpst"></div></div>
+  ${MM?`<div class="card"><div class="top"><h2>${esc(MM.title)}</h2><span class="mu">${MM.date}</span></div><div class="mapw">${mapSVG(MM.tree)}</div>
+  <div class="row"><button class="b" onclick="U.mapTopics()">➕ Add branches as topics</button><button class="b g" onclick="U.mapSaveImg()">⬇ Save image (.svg)</button></div><div class="mu" id="mpm"></div></div>`:""}
+  ${S.maps.length?`<div class="card"><h2>Saved maps</h2>${S.maps.map(m=>`<div class="tp"><span class="n" style="cursor:pointer" onclick="U.mapOpen('${m.id}')">🗺 ${esc(m.title)} <span class="mu">· ${esc(subNm(m.sid))} · ${m.date}</span></span><button class="b g" onclick="U.mapDel('${m.id}')">✕</button></div>`).join("")}</div>`:""}`}
+U.mapGen=b=>run(b,async()=>{const s=curSub(),tp=topicVal("mpt",s),el=$("#mpst");mmOpt=$("#mpo").value;const det=mmOpt=="det";
+  const r=await ask(`Create a mind map for ${s.name}, ${scope(s,tp)}. Reply ONLY JSON: {"center":"short title (max 4 words)","branches":[{"name":"max 4 words","children":["short exam-relevant fact or phrase, max 9 words"]}]} with ${det?"6-8":"4-6"} branches and ${det?"4-5":"3-4"} children each. Make children concrete (definitions, formulas, causes, examples), not vague.`,el,{json:true,fresh:true});
+  if(!r)return;const tree=cleanMap(r,tp||s.name);
+  if(!tree){el.textContent="The AI returned an unusable map. Please try again.";return}
+  MM={id:uid(),sid:s.id,title:tree.center,tree,date:todayS()};S.maps.unshift(MM);if(S.maps.length>10)S.maps.length=10;ctr("map");G().gain(5,"Mind map created");render()});
+U.mapOpen=id=>{MM=S.maps.find(m=>m.id==id)||null;if(MM)CUR=MM.sid;render()};
+U.mapDel=id=>{S.maps=S.maps.filter(m=>m.id!=id);if(MM&&MM.id==id)MM=null;sv();render()};
+U.mapTopics=()=>{if(!MM)return;const s=sub(MM.sid);if(!s)return;const have=new Set(s.topics.map(t=>t.name.toLowerCase()));let n=0;
+  MM.tree.branches.forEach(b=>{if(!have.has(b.name.toLowerCase())){s.topics.push({id:uid(),name:b.name,conf:1,done:false});have.add(b.name.toLowerCase());n++}});sv();const e=$("#mpm");if(e)e.textContent=n?"Added "+n+" topic(s) to "+s.name+".":"Those branches are already in your topics."};
+U.mapSaveImg=async()=>{if(!MM)return;const ok=await saveFile(("mindmap-"+MM.title).replace(/[^\w-]+/g,"-").slice(0,50)+".svg",mapSVG(MM.tree),"image/svg+xml");const e=$("#mpm");if(e)e.textContent=ok?"✅ Image saved.":"Save was cancelled or is unavailable here."};
+
+/* =====================================================
+   5. MISTAKE NOTEBOOK
+===================================================== */
+let MF="all",MST="open";const MS={};
+const mst=id=>MS[id]||(MS[id]={retry:false,pick:null,sim:null,sp:{}});
+function mistCard(m){const st=mst(m.id),mc=m.type=="mcq";
+  let body=`<div style="margin:6px 0">${esc(m.q)}</div>`;
+  if(mc){body+=m.options.map((o,j)=>{let c="";if(st.retry){c=st.pick===j?(j==m.a?"ok":"no"):""}else c=j==m.a?"ok":m.pick===j?"no":"";
+    return `<div class="opt ${c}" ${st.retry&&!m.fixed?`onclick="U.mRetryPick('${m.id}',${j})"`:""}>${"ABCD"[j]}. ${esc(o)}${!st.retry&&m.pick===j&&j!=m.a?' <span class="mu">← your answer</span>':""}${!st.retry&&j==m.a?' <span class="mu">← correct</span>':""}</div>`}).join("")}
+  if(m.why&&!st.retry)body+=`<div class="mu out" style="margin-top:6px">💡 ${esc(m.why)}</div>`;
+  if(st.retry&&st.pick!=null&&!m.fixed)body+=`<div class="warn" style="margin-top:6px">Not yet. Read the explanation and try another option.</div>`;
+  if(st.sim)body+=st.sim.map((q,qi)=>`<div class="mq"><b>Practice ${qi+1}.</b> ${esc(q.q)}${q.options.map((o,j)=>{const p=st.sp[qi];return `<div class="opt ${p!=null?(j==q.a?"ok":p==j?"no":""):""}" onclick="U.mSimPick('${m.id}',${qi},${j})">${"ABCD"[j]}. ${esc(o)}</div>`}).join("")}${st.sp[qi]!=null?`<div class="mu out" style="margin-top:4px">💡 ${esc(q.why)}</div>`:""}</div>`).join("");
+  return `<div class="card"><div class="top"><b>${esc(subNm(m.sid))}${m.topic?` <span class="mu">· ${esc(m.topic)}</span>`:""}</b><span class="pill">${esc(m.src||"Note")} · ${m.date}${m.fixed?" · ✅ fixed":""}</span></div>${body}
+  <div class="out" id="mx-${m.id}" style="margin-top:6px">${m.exp?fmt(m.exp):""}</div>
+  <div class="row"><button class="b g" onclick="U.mExplain('${m.id}',this)">🤖 Why did I get this wrong?</button><button class="b g" onclick="U.mSim('${m.id}',this)">🎯 3 similar questions</button>${mc&&!m.fixed?`<button class="b g" onclick="U.mRetry('${m.id}')">${st.retry?"Show answer":"🔁 Retry"}</button>`:""}<button class="b g" onclick="U.mFix('${m.id}')">${m.fixed?"↩ Re-open":"✔ Mark fixed"}</button><button class="b g" onclick="U.mDel('${m.id}')">✕</button></div></div>`}
+function mistv(){
+  if(!S.subjects.length){$("#view").innerHTML=none;return}
+  const list=S.mist.filter(m=>(MF=="all"||m.sid==MF)&&(MST=="all"||(MST=="open")==!m.fixed)),open=S.mist.filter(m=>!m.fixed).length,s=curSub();
+  $("#view").innerHTML=`<div class="card"><h2>🔍 Mistake notebook</h2><div class="mu">Every wrong answer from your tests and mock papers lands here automatically. Fix each one and watch the pile shrink.</div>
+  <div class="row"><span class="pill">${open} open</span><span class="pill">${S.mist.length-open} fixed</span>
+  <select style="width:auto" onchange="MF_(this.value)"><option value="all">All subjects</option>${S.subjects.map(x=>`<option value="${x.id}" ${MF==x.id?"selected":""}>${esc(x.name)}</option>`).join("")}</select>
+  <select style="width:auto" onchange="MS_(this.value)">${[["open","Open"],["fixed","Fixed"],["all","All"]].map(([k,l])=>`<option value="${k}" ${MST==k?"selected":""}>${l}</option>`).join("")}</select></div>
+  <details class="dt"><summary>➕ Add a mistake by hand</summary><div class="row"><select id="mis" style="width:auto">${sopts(s.id)}</select></div><textarea id="miq" placeholder="The question or what went wrong…"></textarea><textarea id="miw" style="margin-top:6px" placeholder="What I should remember next time…"></textarea><div class="row"><button class="b" onclick="U.mAdd()">Add</button></div></details></div>
+  ${list.map(mistCard).join("")||'<div class="card mu">Nothing here yet. Take a test or a mock paper and your wrong answers will appear automatically. 🎉</div>'}`}
+window.MF_=v=>{MF=v;render()};window.MS_=v=>{MST=v;render()};
+U.mAdd=()=>{const q=($("#miq").value||"").trim(),w=($("#miw").value||"").trim();if(!q)return;addMist({sid:$("#mis").value,type:"note",q,why:w,topic:"",src:"Manual"});render()};
+U.mDel=id=>{S.mist=S.mist.filter(m=>m.id!=id);delete MS[id];sv();render()};
+U.mFix=id=>{const m=S.mist.find(x=>x.id==id);if(!m)return;m.fixed=!m.fixed;if(m.fixed&&!m.xpd){m.xpd=1;G().gain(8,"Mistake fixed");G().boom(40)}sv();render()};
+U.mRetry=id=>{const st=mst(id);st.retry=!st.retry;st.pick=null;render()};
+U.mRetryPick=(id,j)=>{const m=S.mist.find(x=>x.id==id),st=mst(id);if(!m||m.fixed)return;st.pick=j;
+  if(j==m.a){m.fixed=true;st.retry=false;if(!m.xpd){m.xpd=1;G().gain(8,"Mistake fixed")}G().boom(60);sv()}render()};
+U.mExplain=(id,b)=>run(b,async()=>{const m=S.mist.find(x=>x.id==id);if(!m)return;const el=$("#mx-"+id);
+  const opts=m.type=="mcq"?"\nOptions: "+m.options.map((o,i)=>"ABCD"[i]+") "+o).join(" | ")+"\nCorrect: "+"ABCD"[m.a]+(m.pick>=0?"\nStudent chose: "+"ABCD"[m.pick]:"\nStudent left it blank"):"";
+  const t=await ask(`A student got this wrong in ${subNm(m.sid)}.\nQuestion: ${m.q}${opts}\nNotes: ${m.why||"none"}\nExplain in under 150 words: (1) why the right answer is right, (2) the likely misconception behind the mistake, (3) a memory trick or rule to avoid it next time.`,el,{fresh:true});
+  if(t){m.exp=t;sv()}});
+U.mSim=(id,b)=>run(b,async()=>{const m=S.mist.find(x=>x.id==id);if(!m)return;const el=$("#mx-"+id);
+  const r=await ask(`Write 3 NEW multiple-choice practice questions in ${subNm(m.sid)} that test the same idea as this one the student got wrong, but with different numbers/wording. Question: ${m.q}\nReply ONLY JSON: {"questions":[{"q":"","options":["","","",""],"a":0,"why":"short explanation"}]} where "a" is the 0-3 index of the correct option.`,el,{json:true,fresh:true});
+  const qs=cleanQs((r&&r.questions||[]).map(x=>Object.assign({type:"mcq"},x))).filter(x=>x.type=="mcq");
+  if(qs.length){const st=mst(id);st.sim=qs;st.sp={};render()}else if(r)el.textContent="The AI returned unusable questions. Try again."});
+U.mSimPick=(id,qi,j)=>{const st=mst(id);if(!st.sim||st.sp[qi]!=null)return;st.sp[qi]=j;if(j==st.sim[qi].a)G().toast("✅ Correct!");render()};
+/* collect wrong answers from tests */
+(function(){const _s=window.submitT;window.submitT=function(){const was=TS&&TS.done;_s();
+  if(TS&&TS.done&&!was){let n=0;TS.qs.forEach((x,i)=>{if(TS.ans[i]===x.a)return;if(addMist({sid:TS.sid,type:"mcq",q:String(x.q),options:(x.options||[]).map(String),a:+x.a,pick:TS.ans[i]===undefined?-1:TS.ans[i],why:String(x.why||""),topic:String(x.topic||""),src:"Test"}))n++});if(n)G().toast("🔍 "+n+" mistake(s) saved to your notebook")}}})();
+
+/* =====================================================
+   6. COACH (forecast, weekly review, rescue plan, mood, exam-day plan)
+===================================================== */
+const COACH={plan:null,review:"",gp:"",tip:{d:"",t:""}};
+const MOODS=[["😫","Drained"],["😕","Low"],["😐","Okay"],["🙂","Good"],["🤩","Great"]];
+function predict(s){const r=S.results.filter(x=>x.sid==s.id).map(x=>x.pct),n=r.length,rd=ready(s);let p=null;
+  if(n){const w=r.map((_,i)=>i>=n-3?2:1),avg=r.reduce((a,v,i)=>a+v*w[i],0)/w.reduce((a,b)=>a+b,0),last=r.slice(-5),slope=last.length>1?(last[last.length-1]-last[0])/(last.length-1):0,k=clamp(.5+n*.1,.5,.8);
+    p=(rd==null?avg:avg*k+rd*(1-k))+clamp(slope*1.5,-6,8)}
+  else if(rd!=null)p=rd*.75;
+  return{p:p==null?null:Math.round(clamp(p,0,100)),conf:n>=4?"High":n>=2?"Medium":"Low",n}}
+function weekStats(){const out=[];for(const s of S.subjects){let m=0;for(let i=0;i<7;i++)m+=minsOf(s.id,ymd(addDays(new Date(),-i)));out.push(`${s.name}: ${m} min studied in last 7 days, forecast ${(predict(s).p??"n/a")}%, target ${tg(s)}, exam in ${days(s.date)??"?"} days, weak topics: ${s.topics.filter(t=>t.conf==1&&!t.done).map(t=>t.name).slice(0,5).join(", ")||"none"}, recent tests: ${recent(s)}`)}return out.join("\n")}
+function coachv(){
+  if(!S.subjects.length){$("#view").innerHTML=none;return}
+  const t0=todayS(),preds=S.subjects.map(s=>[s,predict(s)]),s=curSub(),mood=S.mood[t0];
+  if(preds.some(x=>x[1].p!=null)&&!S.cnt.coach){S.cnt.coach=1;sv()}
+  const strip=[...Array(7)].map((_,i)=>{const d=ymd(addDays(new Date(),i-6)),m=S.mood[d];return `<span title="${d}" style="text-align:center"><div style="font-size:22px">${m==null?"·":MOODS[m][0]}</div><div class="mu" style="font-size:10px">${new Date(d+"T00:00:00").toLocaleDateString(undefined,{weekday:"short"})}</div></span>`}).join("");
+  const lowRun=[0,1,2].every(i=>{const m=S.mood[ymd(addDays(new Date(),-i))];return m!=null&&m<=1});
+  $("#view").innerHTML=`<div class="card"><h2>🔮 Score forecast</h2><div class="mu">An estimate from your test scores, trend and how much of the syllabus you've mastered. The white marker is your target.</div>
+  ${preds.map(([x,p])=>{const t=+x.target||0;return `<div class="mq"><div class="top"><b>${esc(x.name)}</b><span class="pill">${p.p==null?"No data yet":p.p+"% · Grade "+grade(p.p)}</span></div><div class="pm"><i style="width:${p.p||0}%"></i>${t?`<u style="left:${clamp(t,0,99)}%" title="Target ${t}%"></u>`:""}</div><div class="mu">${t?`Target ${t}% · ${p.p==null?"":p.p>=t?"✅ on track":"⬆ "+(t-p.p)+"% gap to close"}`:"Set a target % in Subjects"} · Confidence: ${p.conf} (${p.n} test${p.n==1?"":"s"})${p.p==null?" · tick topics and take a test to unlock":""}</div></div>`}).join("")}</div>
+  <div class="card"><h2>🧑‍⚕️ Daily check-in</h2><div class="mu">How are you feeling today? The AI adapts its advice to your energy.</div><div class="mood">${MOODS.map((m,i)=>`<button class="${mood===i?"on":""}" title="${m[1]}" onclick="U.mood(${i})">${m[0]}</button>`).join("")}</div>
+  <div class="row" style="justify-content:space-between;margin-top:10px">${strip}</div>
+  ${lowRun?'<div class="warn">You have felt low for 3 days in a row. Take real breaks, sleep and talk to someone you trust (a friend, family member, teacher or counsellor). Your wellbeing matters more than any exam.</div>':""}
+  <div class="out" id="mo" style="margin-top:8px">${COACH.tip.d==t0?fmt(COACH.tip.t):""}</div></div>
+  <div class="card"><h2>📋 Weekly AI review</h2><div class="mu">The coach reads your last 7 days (study time, tests, weak topics) and tells you what to change.</div><div class="row"><button class="b" onclick="U.review(this)">Review my week</button></div><div class="out" id="wr">${COACH.review?fmt(COACH.review):""}</div></div>
+  <div class="card"><h2>🆘 Rescue plan</h2><div class="mu">Behind schedule? The AI builds a 7-day catch-up plan, focusing on your biggest gaps. You choose whether to add it to the planner.</div>
+  <div class="row"><select id="rh" style="width:auto"><option value="60">1 hour a day</option><option value="120" selected>2 hours a day</option><option value="180">3 hours a day</option><option value="240">4 hours a day</option></select><button class="b" onclick="U.rescue(this)">Build plan</button></div><div class="mu" id="rsc"></div>
+  ${COACH.plan?`<div style="margin-top:8px">${COACH.plan.map(x=>`<div class="tp"><span class="n"><b>${fd2(new Date(x.date+"T00:00:00"))}</b> · ${esc(x.sname)}: ${esc(x.title)} <span class="mu">· ${x.min}m</span></span></div>`).join("")}<div class="row"><button class="b" onclick="U.rescueAdd()">➕ Add all ${COACH.plan.length} sessions to my planner</button><button class="b g" onclick="COACH.plan=null;render()">Discard</button></div></div>`:""}</div>
+  <div class="card"><h2>🎯 Exam-day game plan</h2>${subBar(s)}<div class="mu">The night before, the morning, time split per question, what to do if your mind goes blank.</div><div class="row"><button class="b" onclick="U.gamePlan(this)">Create game plan</button></div><div class="out" id="gp">${COACH.gp?fmt(COACH.gp):""}</div></div>`}
+U.mood=async i=>{const t0=todayS(),first=S.mood[t0]==null;S.mood[t0]=i;sv();if(first)G().gain(3,"Check-in done");COACH.tip={d:"",t:""};render();
+  const el=$("#mo");if(!el)return;const tk=S.tasks.filter(x=>x.date==t0&&!x.done).map(x=>x.title+" ("+subNm(x.sid)+", "+x.min+"m)").join("; ")||"none planned";
+  const nx=S.subjects.filter(s=>s.date&&days(s.date)>=0).sort((a,b)=>days(a.date)-days(b.date))[0];
+  const t=await ask(`The student feels "${MOODS[i][1]}" today (${MOODS[i][0]}). Today's pending sessions: ${tk}. Streak: ${streak()} days. Next exam: ${nx?nx.name+" in "+days(nx.date)+" days":"not set"}. In under 90 words: respond warmly, then give an adjusted plan for today (what to keep, shorten or skip) and one tiny action to start with. If the mood is very low, gently encourage rest and talking to someone they trust.`,el,{fresh:true});
+  if(t){COACH.tip={d:t0,t}}};
+U.review=b=>run(b,async()=>{const el=$("#wr");const t=await ask(`Write a weekly review for this student. Data per subject:\n${weekStats()}\nStreak: ${streak()} days. Structure: 🏆 Wins (2 bullets), ⚠ Concerns (up to 3 bullets), 🎯 Next week: exactly 3 specific actions with numbers (minutes, number of questions). Under 220 words.`,el,{fresh:true});
+  if(t){COACH.review=t;ctr("coach")}});
+U.rescue=b=>run(b,async()=>{const el=$("#rsc"),mins=+$("#rh").value,t0=todayS();
+  const r=await ask(`Today is ${t0}. Build a 7-day catch-up study plan starting today, about ${mins} minutes of study per day (sessions of 25-60 min, max 4 per day). Prioritise subjects with the biggest gap between forecast and target and the nearest exams, but include every subject at least twice. Never schedule a subject after its exam date. Data:\n${weekStats()}\nExam dates: ${S.subjects.map(s=>s.name+" "+(s.date||"none")).join(", ")}\nReply ONLY JSON: {"tasks":[{"date":"YYYY-MM-DD","subject":"exact subject name","title":"specific task","min":45}]}`,el,{json:true,tier:"complex",fresh:true});
+  if(!r||!Array.isArray(r.tasks))return;
+  const plan=r.tasks.map(x=>{const s=S.subjects.find(q=>q.name.toLowerCase()==String(x.subject||"").toLowerCase());return s&&/^\d{4}-\d\d-\d\d$/.test(String(x.date))?{date:String(x.date),sid:s.id,sname:s.name,title:String(x.title||"Study").slice(0,120),min:clamp(Math.round(+x.min||45),10,120)}:null}).filter(Boolean).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!plan.length){el.textContent="The AI returned an unusable plan. Try again.";return}
+  COACH.plan=plan;render()});
+U.rescueAdd=()=>{if(!COACH.plan)return;COACH.plan.forEach(x=>S.tasks.push({id:uid(),date:x.date,sid:x.sid,title:x.title,min:x.min,done:false}));const n=COACH.plan.length;COACH.plan=null;sv();G().toast("➕ "+n+" sessions added to your planner");U.go("plan")};
+U.gamePlan=b=>run(b,async()=>{const s=curSub(),el=$("#gp");
+  const t=await ask(`Create an exam-day game plan for ${s.name}. Exam in ${days(s.date)??"unknown"} days. Student target: ${tg(s)}. Weak topics: ${s.topics.filter(t=>t.conf==1).map(t=>t.name).slice(0,6).join(", ")||"none flagged"}. Sections with headings: 🌙 Night before (checklist), ☀ Morning routine, ⏱ Time plan during the exam (how to split time by marks, when to move on), 🧠 If my mind goes blank (3 steps), ✅ Last 10 minutes check. Be specific and practical, under 260 words.`,el,{fresh:true});
+  if(t)COACH.gp=t});
+
+/* =====================================================
+   7. STUDY KIT
+===================================================== */
+const KITS=[["cheat","📑","One-page cheat sheet","Create a dense ONE-PAGE revision cheat sheet: key definitions, formulas or rules, steps/processes, and the 5 facts most likely to earn marks. Group under short headings with bullets."],
+ ["gloss","🔤","Key terms glossary","List the 15-20 most important key terms with a crisp one-line definition each, in the wording examiners like."],
+ ["likely","🎲","Likely exam questions","Predict the 8 most likely exam questions (mix of short and long) with marks, and for each give a 2-line hint on what a full-mark answer must include."],
+ ["work","🪜","Worked examples","Give 3 worked examples of increasing difficulty, solved step by step, with a note on where students usually slip."],
+ ["trap","🧩","Common traps","List the 8 most common mistakes and traps students make here, why they happen, and how to avoid each."],
+ ["real","🌍","Real-life examples","Give 6 vivid real-life examples or analogies that make the ideas stick, each linked to the exact concept it illustrates."],
+ ["eli","🧸","Explain like I'm 10","Explain the ideas in very simple words with everyday analogies, as if to a 10-year-old, then give a 3-line grown-up summary."],
+ ["cmp","⚖️","Compare & contrast","Pick the 4 pairs of concepts students most often confuse. For each, list the key similarities and differences as short bullets and one exam tip."]];
+let KO=null;
+function kitv(){
+  if(!S.subjects.length){$("#view").innerHTML=none;return}
+  const s=curSub();
+  $("#view").innerHTML=`${subBar(s)}<div class="card"><h2>📑 AI Study Kit</h2><div class="mu">Pick a topic, then a tool. Save the result into your Notes, copy it, or download it.</div><div class="row">${topicSel("kt",s)}</div>
+  <div class="tiles" style="margin-top:8px">${KITS.map(k=>`<button class="tile" onclick="U.kit('${k[0]}',this)"><b>${k[1]}</b><span>${k[2]}</span></button>`).join("")}</div></div>
+  <div class="card"><div class="out" id="ko">${KO?fmt(KO.text):'<span class="mu">Your result appears here.</span>'}</div><div class="row" id="kbar">${kbar()}</div><div class="mu" id="kmsg"></div></div>`}
+const kbar=()=>KO?`<button class="b" onclick="U.kNotes()">💾 Save to Notes</button><button class="b g" onclick="U.kCopy()">📋 Copy</button><button class="b g" onclick="U.kDown()">⬇ Download .md</button>`:"";
+U.kit=(k,b)=>run(b,async()=>{const s=curSub(),tp=topicVal("kt",s),def=KITS.find(x=>x[0]==k),el=$("#ko");
+  const t=await ask(`${def[3]}\nSubject: ${s.name}. Scope: ${scope(s,tp)}. The student targets ${tg(s)}. Plain text with '-' bullets and short headings; no tables.`,el,{tier:"complex",fresh:true});
+  if(t){KO={text:t,title:def[2]+" · "+s.name+(tp&&!tp.includes(";")?" · "+tp:""),sid:s.id};$("#kbar").innerHTML=kbar()}});
+U.kNotes=()=>{if(!KO)return;S.notes[KO.sid]=(S.notes[KO.sid]?S.notes[KO.sid]+"\n\n":"")+"=== "+KO.title+" ===\n"+KO.text;sv();$("#kmsg").textContent="✅ Saved to "+subNm(KO.sid)+" in Notes."};
+U.kCopy=async()=>{if(!KO)return;$("#kmsg").textContent=(await copyTxt(KO.title+"\n\n"+KO.text))?"✅ Copied.":"Copy failed. Select the text and copy it manually."};
+U.kDown=async()=>{if(!KO)return;const ok=await saveFile(KO.title.replace(/[^\w-]+/g,"-").slice(0,60)+".md","# "+KO.title+"\n\n"+KO.text,"text/markdown");$("#kmsg").textContent=ok?"✅ Saved.":"Save was cancelled or is unavailable here."};
+
+/* =====================================================
+   8. DASHBOARD EXTRAS: quick launch + daily challenge
+===================================================== */
+let DQ=null;
+function quick(){return `<div class="card"><h2>🤖 AI Studio</h2><div class="tiles">${[["chat","💬","AI chat tutor"],["mock","📄","Mock paper"],["lab","✍️","Answer marker"],["map","🗺","Mind map"],["coach","🔮","Score forecast"],["kit","📑","Study kit"],["mist","🔍","Mistakes"]].map(t=>`<button class="tile" onclick="U.go('${t[0]}')"><b>${t[1]}</b><span>${t[2]}</span></button>`).join("")}</div></div>`}
+function dailyCard(){if(!S.subjects.length)return"";const done=S.dq&&S.dq.date==todayS();
+  if(DQ&&DQ.q)return `<div class="card"><h2>⚡ Daily challenge · ${esc(DQ.sub)}</h2><div>${esc(DQ.q)}</div>${DQ.options.map((o,j)=>`<div class="opt ${DQ.pick!=null?(j==DQ.a?"ok":DQ.pick==j?"no":""):""}" onclick="U.dqPick(${j})">${"ABCD"[j]}. ${esc(o)}</div>`).join("")}${DQ.pick!=null?`<div class="mu out" style="margin-top:6px">💡 ${esc(DQ.why)}</div><div class="row"><button class="b g" onclick="DQ_()">Close</button></div>`:""}</div>`;
+  return `<div class="card"><h2>⚡ Daily challenge</h2><div class="mu">${done?"Done today ✅ You can still try another for practice (no extra XP).":"One hard question a day. A correct answer earns +15 XP."}</div><div class="row"><button class="b" onclick="U.dqStart(this)">${done?"Another question":"Start challenge"}</button></div><div class="mu" id="dqo"></div></div>`}
+window.DQ_=()=>{DQ=null;render()};
+U.dqStart=b=>run(b,async()=>{const s=S.subjects[Math.floor(Math.random()*S.subjects.length)],tp=s.topics.length?s.topics[Math.floor(Math.random()*s.topics.length)].name:"";
+  const r=await ask(`Write ONE hard exam-style multiple-choice question for ${s.name}${tp?", topic: "+tp:""} that needs multi-step reasoning. Reply ONLY JSON: {"q":"","options":["","","",""],"a":0,"why":"short explanation"} where "a" is the 0-3 index of the correct option.`,$("#dqo"),{json:true,tier:"complex",fresh:true});
+  if(r&&Array.isArray(r.options)&&r.options.length>=2&&r.q){DQ={sub:s.name,q:String(r.q),options:r.options.map(String).slice(0,4),a:clamp(+r.a||0,0,r.options.length-1),why:String(r.why||""),pick:null};render()}});
+U.dqPick=j=>{if(!DQ||DQ.pick!=null)return;DQ.pick=j;const first=!(S.dq&&S.dq.date==todayS());
+  if(j==DQ.a){if(first)G().gain(15,"Daily challenge");else G().toast("✅ Correct!");G().boom(90)}else G().toast("Not quite. Read the explanation 👇");S.dq={date:todayS()};sv();render()};
+
+/* =====================================================
+   9. FOCUS EXTRAS: "what now?" + ambient sounds
+===================================================== */
+let NOW=null,AC=null,SRC=null,GN=null,LFO=null,SNDT="",VOL=.5;
+function localNow(min){const ss=S.subjects.filter(s=>!s.date||days(s.date)>=0).sort((a,b)=>(days(a.date)??999)-(days(b.date)??999)),s=ss[0]||S.subjects[0];
+  const t=s.topics.filter(x=>!x.done).sort((a,b)=>a.conf-b.conf)[0];
+  return{sid:s.id,topic:t?t.name:"",task:t?"Study "+t.name+" and finish with 3 recall questions":"Do one timed past-paper question",why:"Closest exam and weakest topic first.",min}}
+function nowBox(){if(!NOW)return"";return `<div class="good" style="margin-top:6px"><b>${esc(subNm(NOW.sid))}${NOW.topic?" · "+esc(NOW.topic):""}</b><div>${esc(NOW.task)}</div><div class="mu">${esc(NOW.why)}</div><div class="row"><button class="b" onclick="U.nowStart()">▶ Start ${NOW.min}-min timer</button></div></div>`}
+U.now=b=>run(b,async()=>{const min=+$("#nm").value,o=$("#nowo");if(!S.subjects.length){o.textContent="Add a subject first.";return}
+  const t0=todayS();let r=null;
+  if(AI){r=await ask(`The student has ${min} minutes to study right now. Pick the single best next task. Data:\n${S.subjects.map(ctx).join("\n")}\nMinutes already studied today: ${minsOf("",t0)}. Pending sessions today: ${S.tasks.filter(x=>x.date==t0&&!x.done).map(x=>x.title+" ("+subNm(x.sid)+")").join("; ")||"none"}.\nReply ONLY JSON: {"subject":"exact subject name","topic":"topic name","task":"one concrete action, e.g. 'Do 5 past-paper questions on X, then write 3 flashcards'","why":"one short reason"}`,o,{json:true,fresh:true})}
+  const s=r&&S.subjects.find(x=>x.name.toLowerCase()==String(r.subject||"").toLowerCase());
+  NOW=s?{sid:s.id,topic:String(r.topic||""),task:String(r.task||"Study"),why:String(r.why||""),min}:localNow(min);o.innerHTML=nowBox()});
+U.nowStart=()=>{if(!NOW)return;FS=NOW.sid;setT(NOW.min);tgl()};
+function stopSnd(){try{SRC&&SRC.stop()}catch(e){}try{LFO&&LFO.stop()}catch(e){}SRC=LFO=null}
+U.snd=t=>{stopSnd();SNDT=SNDT==t?"":t;
+  if(SNDT){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state=="suspended")AC.resume();
+    const sr=AC.sampleRate,len=sr*4,buf=AC.createBuffer(1,len,sr),d=buf.getChannelData(0);let last=0;const brown=SNDT=="brown"||SNDT=="ocean";
+    for(let i=0;i<len;i++){const w=Math.random()*2-1;if(brown){last=(last+.02*w)/1.02;d[i]=last*2.6}else d[i]=w*.5}
+    if(brown){const dr=d[len-1]-d[0];for(let i=0;i<len;i++)d[i]-=dr*i/len}
+    SRC=AC.createBufferSource();SRC.buffer=buf;SRC.loop=true;let node=SRC;
+    if(SNDT=="rain"){const hp=AC.createBiquadFilter();hp.type="highpass";hp.frequency.value=900;const lp=AC.createBiquadFilter();lp.type="lowpass";lp.frequency.value=8000;node.connect(hp);hp.connect(lp);node=lp}
+    if(SNDT=="ocean"){const mg=AC.createGain();mg.gain.value=.65;LFO=AC.createOscillator();LFO.frequency.value=.09;const lg=AC.createGain();lg.gain.value=.35;LFO.connect(lg);lg.connect(mg.gain);LFO.start();node.connect(mg);node=mg}
+    GN=AC.createGain();GN.gain.value=VOL*.6;node.connect(GN);GN.connect(AC.destination);SRC.start()}catch(e){SNDT=""}}
+  render()};
+U.vol=v=>{VOL=+v/100;if(GN)GN.gain.value=VOL*.6};
+function focusExtra(){const v=$("#view");if(!v.firstElementChild)return;
+  v.firstElementChild.insertAdjacentHTML("afterend",`<div class="card"><h2>🤔 What should I study right now?</h2><div class="row"><select id="nm" style="width:auto"><option>15</option><option selected>25</option><option>45</option><option>60</option></select><span class="mu">minutes available</span><button class="b" onclick="U.now(this)">Tell me</button></div><div id="nowo" class="out">${nowBox()}</div></div>
+  <div class="card"><h2>🎧 Focus sounds</h2><div class="chips" style="justify-content:flex-start">${[["rain","🌧 Rain"],["ocean","🌊 Ocean"],["brown","🟤 Brown noise"],["white","⚪ White noise"]].map(([k,l])=>`<button class="chip ${SNDT==k?"on":""}" onclick="U.snd('${k}')">${l}</button>`).join("")}</div>
+  <div class="row"><span class="mu">Volume</span><input type="range" min="5" max="100" value="${Math.round(VOL*100)}" style="flex:1;padding:0" oninput="U.vol(this.value)"></div><div class="mu">Tap a sound again to switch it off. Sounds are generated on your device.</div></div>`)}
+
+/* =====================================================
+   10. EXPORTS
+===================================================== */
+U.saveBackup=async()=>{const ok=await saveFile("gradeup-backup-"+todayS()+".json",JSON.stringify(bkData(),null,1),"application/json");G().toast(ok?"💾 Backup saved":"Backup cancelled")};
+U.exportCSV=async()=>{const q=v=>'"'+String(v).replace(/"/g,'""')+'"',us=d=>{const [y,m,dd]=d.split("-");return m+"/"+dd+"/"+y},rows=[["Subject","Start Date","All Day Event","Description"]];
+  S.tasks.filter(x=>/^\d{4}-\d\d-\d\d$/.test(x.date)).sort((a,b)=>a.date.localeCompare(b.date)).forEach(x=>rows.push([(x.done?"✅ ":"📘 ")+subNm(x.sid)+": "+x.title+" ("+x.min+"m)",us(x.date),"True","GradeUp study session"]));
+  S.subjects.forEach(s=>{if(s.date)rows.push(["🎯 EXAM: "+s.name,us(s.date),"True","GradeUp exam date"])});
+  const ok=await saveFile("gradeup-planner.csv",rows.map(r=>r.map(q).join(",")).join("\r\n"),"text/csv");G().toast(ok?"📅 Planner exported (CSV works with Google Calendar and Excel)":"Export cancelled")};
+
+/* ---------- register tabs + hook render ---------- */
+Object.assign(XV,{chat:chatv,lab:labv,mock:mockv,map:mapv,mist:mistv,coach:coachv,kit:kitv});
+const R0=window.render;
+window.render=function(){R0();
+  if(S.tab=="dash"){const v=$("#view");if(v){const h=v.querySelector(".hero"),html=quick()+dailyCard();if(h)h.insertAdjacentHTML("afterend",html);else v.insertAdjacentHTML("afterbegin",html)}}
+  if(S.tab=="focus")focusExtra()};
 render();
 })();
 </script></body></html>
